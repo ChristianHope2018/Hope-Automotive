@@ -174,14 +174,21 @@ function loadCarDetails(carId) {
             <p><strong>Asking Price:</strong> $${car.price}</p>
             <p><strong>VIN:</strong> ${car.vin}</p>
             <h3>Images:</h3>
-            ${car.images.map((img) => `<img src="${img}" alt="${car.name}" />`).join("")}
-            <h3>Videos:</h3>
-            ${car.videos.map((vid) => `<video controls><source src="${vid}" type="video/mp4"></video>`).join("")}
+            <div class="car-images">
+                ${car.images
+                    .map(
+                        (img) =>
+                            `<img src="${img}" alt="${car.name}" class="car-image" style="width: 100%; max-width: 300px; margin: 10px;">`
+                    )
+                    .join("")}
+            </div>
         `;
     } else {
         alert("Car not found!");
+        window.location.href = "index.html";
     }
 }
+
 
 // Initialize Pages
 document.addEventListener("DOMContentLoaded", () => {
