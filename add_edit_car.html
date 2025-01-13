@@ -46,7 +46,10 @@
             <input type="text" id="vin" name="vin" required>
 
             <label for="car-images">Upload Images:</label>
-            <input type="file" id="car-images" name="car-images" accept="image/*" multiple>
+            <input type="file" id="car-images" multiple accept="image/*">
+            <div id="image-preview" class="image-preview">
+           <!-- Uploaded images will be previewed here -->
+            </div>
             
             <label for="license-expiration">License Expiration Date:</label>
             <input type="date" id="license-expiration" name="license-expiration" required>
