@@ -198,3 +198,68 @@ document.addEventListener("DOMContentLoaded", () => {
         loadCarDetails(carId);
     }
 });
+
+// Function to read uploaded images as Base64
+function readImages(files) {
+    return Promise.all(
+        Array.from(files).map((file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result); // Base64 string
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+            });
+        })
+    );
+}
+
+// Handle Add/Edit Car Form Submission
+document.getElementById("car-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const carData = new FormData(event.target);
+    const carId = carData.get("id"); // Hidden field for editing
+    const imageFiles = document.getElementById("car-images").files;
+
+    // Read images as Base64
+    let images = [];
+    if (imageFiles.length > 0) {
+        images = await readImages(imageFiles);
+    }
+
+    // Build car object
+    const newCar = {
+        id: carId ? parseInt(carId) : Date.now(),
+        year: carData.get("year"),
+        name: carData.get("name"),
+        color: carData.get("color"),
+        interiorColor: carData.get("interior-color"),
+        interiorType: carData.get("interior-type"),
+        odometer: carData.get("odometer"),
+        price: carData.get("price"),
+        vin: carData.get("vin"),
+        images: images, // Base64 images
+        licenseExpiration: carData.get("license-expiration"),
+        insuranceExpiration: carData.get("insurance-expiration"),
+        lastServiced: carData.get("last-serviced"),
+        partsNeeded: carData.get("parts-needed"),
+        problems: carData.get("problems"),
+    };
+
+    // Save to localStorage
+    const carList = getCarList();
+    if (carId) {
+        // Editing existing car
+        const index = carList.findIndex((car) => car.id === parseInt(carId));
+        if (index !== -1) {
+            carList[index] = newCar;
+        }
+    } else {
+        // Adding new car
+        carList.push(newCar);
+    }
+
+    saveCarList(carList);
+    alert("Car saved successfully!");
+    window.location.href = "admin.html";
+});
