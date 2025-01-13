@@ -274,3 +274,38 @@ document.getElementById("car-form")?.addEventListener("submit", async (event) =>
     alert("Car saved successfully!");
     window.location.href = "admin.html";
 });
+
+// Load Car Images
+function loadCarImages(carId) {
+    const car = getCarList().find((c) => c.id === parseInt(carId));
+
+    if (car) {
+        const carImagesGallery = document.getElementById("car-images-gallery");
+        const carDetailsLink = document.getElementById("car-details-link");
+
+        // Set back to details link
+        carDetailsLink.href = `car-details.html?id=${car.id}`;
+
+        if (car.images.length > 0) {
+            carImagesGallery.innerHTML = car.images
+                .map(
+                    (img) =>
+                        `<img src="${img}" alt="${car.name}" class="car-image-gallery" style="width: 100%; max-width: 400px; margin: 10px;">`
+                )
+                .join("");
+        } else {
+            carImagesGallery.innerHTML = "<p>No images available for this car.</p>";
+        }
+    } else {
+        alert("Car not found!");
+        window.location.href = "index.html";
+    }
+}
+
+// Initialize Car Images Page
+document.addEventListener("DOMContentLoaded", () => {
+    const carId = new URLSearchParams(window.location.search).get("id");
+    if (carId && document.getElementById("car-images-gallery")) {
+        loadCarImages(carId);
+    }
+});
