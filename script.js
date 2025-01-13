@@ -95,7 +95,17 @@ function loadPublicCars() {
     const carListContainer = document.getElementById("car-list-public");
     const carList = getCarList();
 
-    carListContainer.innerHTML = "";
+    if (!carListContainer) {
+        console.error("Public car list container not found!");
+        return;
+    }
+
+    carListContainer.innerHTML = ""; // Clear previous content
+
+    if (carList.length === 0) {
+        carListContainer.innerHTML = "<p>No cars are available at the moment.</p>";
+        return;
+    }
 
     carList.forEach((car) => {
         const carCard = document.createElement("div");
