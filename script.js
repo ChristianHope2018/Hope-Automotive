@@ -111,7 +111,10 @@ function loadPublicCars() {
         const carCard = document.createElement("div");
         carCard.classList.add("car-item");
 
+        const firstImage = car.images[0] || "https://via.placeholder.com/300";
+
         carCard.innerHTML = `
+            <img src="${firstImage}" alt="${car.name}" class="car-thumbnail" style="width: 100%; max-width: 300px;">
             <h3>${car.year} ${car.name}</h3>
             <p><strong>Color:</strong> ${car.color}</p>
             <p><strong>Odometer:</strong> ${car.odometer} miles</p>
@@ -122,6 +125,7 @@ function loadPublicCars() {
         carListContainer.appendChild(carCard);
     });
 }
+
 
 // Load Admin Car List
 function loadAdminCars() {
