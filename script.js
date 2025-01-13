@@ -346,3 +346,28 @@ function loadCarImages(carId) {
         window.location.href = "index.html";
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const carImagesInput = document.getElementById("car-images");
+    const imagePreviewContainer = document.getElementById("image-preview");
+
+    if (carImagesInput) {
+        carImagesInput.addEventListener("change", (event) => {
+            const files = event.target.files;
+            imagePreviewContainer.innerHTML = ""; // Clear previous previews
+
+            Array.from(files).forEach((file) => {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    // Create an img element for preview
+                    const img = document.createElement("img");
+                    img.src = e.target.result; // Base64 string
+                    imagePreviewContainer.appendChild(img);
+                };
+
+                reader.readAsDataURL(file); // Convert image to Base64
+            });
+        });
+    }
+});
