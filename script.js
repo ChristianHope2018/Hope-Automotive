@@ -125,7 +125,7 @@ document.getElementById("login-form")?.addEventListener("submit", function(event
             document.getElementById("problems").value = car.problems;
         }
     }
-});
+);
 
 // Load cars for admin page
 function loadCarListAdmin() {
