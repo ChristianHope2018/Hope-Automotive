@@ -57,23 +57,23 @@ document.getElementById("car-form")?.addEventListener("submit", (event) => {
     const carData = new FormData(event.target);
 
     const newCar = {
-        id: carId ? parseInt(carId) : Date.now(),
-        year: carData.get("year"),
-        name: carData.get("name"),
-        color: carData.get("color"),
-        interiorColor: carData.get("interior-color"),
-        interiorType: carData.get("interior-type"),
-        odometer: carData.get("odometer"),
-        price: carData.get("price"),
-        vin: carData.get("vin"),
-        images: carData.getAll("car-images"),
-        videos: carData.getAll("car-videos"),
-        licenseExpiration: carData.get("license-expiration"),
-        insuranceExpiration: carData.get("insurance-expiration"),
-        lastServiced: carData.get("last-serviced"),
-        partsNeeded: carData.get("parts-needed"),
-        problems: carData.get("problems"),
-    };
+    id: carId ? parseInt(carId) : Date.now(),
+    year: carData.get("year"),
+    name: carData.get("name"),
+    color: carData.get("color"),
+    interiorColor: carData.get("interior-color"),
+    interiorType: carData.get("interior-type"),
+    odometer: carData.get("odometer"),
+    price: carData.get("price"),
+    vin: carData.get("vin"),
+    images: carData.get("car-images").split(",").map((img) => img.trim()), // Split and trim
+    videos: carData.get("car-videos").split(",").map((vid) => vid.trim()), // Split and trim
+    licenseExpiration: carData.get("license-expiration"),
+    insuranceExpiration: carData.get("insurance-expiration"),
+    lastServiced: carData.get("last-serviced"),
+    partsNeeded: carData.get("parts-needed"),
+    problems: carData.get("problems"),
+};
 
     let carList = getCarList();
 
