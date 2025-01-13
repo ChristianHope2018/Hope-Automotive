@@ -301,3 +301,48 @@ document.addEventListener("DOMContentLoaded", () => {
         loadCarImages(carId);
     }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const carId = new URLSearchParams(window.location.search).get("id");
+    const carImagesGallery = document.getElementById("car-images-gallery");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const closeLightbox = document.querySelector(".close");
+
+    if (carId) {
+        loadCarImages(carId);
+    }
+
+    if (carImagesGallery) {
+        carImagesGallery.addEventListener("click", (e) => {
+            if (e.target.tagName === "IMG") {
+                lightboxImage.src = e.target.src;
+                lightbox.classList.remove("hidden");
+            }
+        });
+    }
+
+    if (closeLightbox) {
+        closeLightbox.addEventListener("click", () => {
+            lightbox.classList.add("hidden");
+        });
+    }
+});
+
+// Add this function to the CSS as well:
+function loadCarImages(carId) {
+    const car = getCarList().find((c) => c.id === parseInt(carId));
+
+    if (car) {
+        const carImagesGallery = document.getElementById("car-images-gallery");
+        carImagesGallery.innerHTML = car.images
+            .map(
+                (img) =>
+                    `<img src="${img}" alt="Car Image" class="car-image-gallery" style="cursor: pointer; width: 100%; max-width: 400px;">`
+            )
+            .join("");
+    } else {
+        alert("Car not found!");
+        window.location.href = "index.html";
+    }
+}
