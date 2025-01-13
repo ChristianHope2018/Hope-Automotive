@@ -179,3 +179,37 @@ footer {
 .car-image-gallery:hover {
     transform: scale(1.05);
 }
+
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+}
+
+.lightbox.hidden {
+    display: none;
+}
+
+.lightbox-image {
+    max-width: 90%;
+    max-height: 80%;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+    z-index: 1001;
+}
