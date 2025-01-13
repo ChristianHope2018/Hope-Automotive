@@ -50,43 +50,52 @@ document.getElementById("logout")?.addEventListener("click", () => {
 });
 
 // Add or Edit Car
-document.getElementById("car-form")?.addEventListener("submit", (event) => {
+document.getElementById("car-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
-
-    const carId = document.getElementById("car-id").value;
     const carData = new FormData(event.target);
+    const carId = carData.get("id"); // Hidden field for editing
+    const imageFiles = document.getElementById("car-images").files;
 
+    // Read images as Base64
+    let images = [];
+    if (imageFiles.length > 0) {
+        images = await readImages(imageFiles);
+    }
+
+    // Build car object
     const newCar = {
-    id: carId ? parseInt(carId) : Date.now(),
-    year: carData.get("year"),
-    name: carData.get("name"),
-    color: carData.get("color"),
-    interiorColor: carData.get("interior-color"),
-    interiorType: carData.get("interior-type"),
-    odometer: carData.get("odometer"),
-    price: carData.get("price"),
-    vin: carData.get("vin"),
-    images: carData.get("car-images").split(",").map((img) => img.trim()), // Split and trim
-    videos: carData.get("car-videos").split(",").map((vid) => vid.trim()), // Split and trim
-    licenseExpiration: carData.get("license-expiration"),
-    insuranceExpiration: carData.get("insurance-expiration"),
-    lastServiced: carData.get("last-serviced"),
-    partsNeeded: carData.get("parts-needed"),
-    problems: carData.get("problems"),
-};
+        id: carId ? parseInt(carId) : Date.now(),
+        year: carData.get("year"),
+        name: carData.get("name"),
+        color: carData.get("color"),
+        interiorColor: carData.get("interior-color"),
+        interiorType: carData.get("interior-type"),
+        odometer: carData.get("odometer"),
+        price: carData.get("price"),
+        vin: carData.get("vin"),
+        images: images, // Base64 images
+        licenseExpiration: carData.get("license-expiration"),
+        insuranceExpiration: carData.get("insurance-expiration"),
+        lastServiced: carData.get("last-serviced"),
+        partsNeeded: carData.get("parts-needed"),
+        problems: carData.get("problems"),
+    };
 
+    // Save to localStorage
     let carList = getCarList();
-
     if (carId) {
-        const carIndex = carList.findIndex((car) => car.id === parseInt(carId));
-        carList[carIndex] = newCar;
-        alert("Car updated successfully!");
+        // Editing existing car
+        const index = carList.findIndex((car) => car.id === parseInt(carId));
+        if (index !== -1) {
+            carList[index] = newCar;
+        }
     } else {
+        // Adding new car
         carList.push(newCar);
-        alert("Car added successfully!");
     }
 
     saveCarList(carList);
+    alert("Car saved successfully!");
     window.location.href = "admin.html";
 });
 
@@ -95,10 +104,7 @@ function loadPublicCars() {
     const carListContainer = document.getElementById("car-list-public");
     const carList = getCarList();
 
-    if (!carListContainer) {
-        console.error("Public car list container not found!");
-        return;
-    }
+    if (!carListContainer) return console.error("Public car list container not found!");
 
     carListContainer.innerHTML = ""; // Clear previous content
 
@@ -125,7 +131,6 @@ function loadPublicCars() {
         carListContainer.appendChild(carCard);
     });
 }
-
 
 // Load Admin Car List
 function loadAdminCars() {
@@ -186,23 +191,30 @@ function loadCarDetails(carId) {
     }
 }
 
-// Initialize Pages
-document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("car-list-public")) {
-        loadPublicCars();
-    }
+// Load Car Images
+function loadCarImages(carId) {
+    const car = getCarList().find((c) => c.id === parseInt(carId));
 
-    if (document.getElementById("car-list-admin")) {
-        loadAdminCars();
-    }
+    if (car) {
+        const carImagesGallery = document.getElementById("car-images-gallery");
 
-    const carId = new URLSearchParams(window.location.search).get("id");
-    if (carId && document.getElementById("car-details")) {
-        loadCarDetails(carId);
+        if (car.images.length > 0) {
+            carImagesGallery.innerHTML = car.images
+                .map(
+                    (img) =>
+                        `<img src="${img}" alt="Car Image" class="car-image-gallery" style="cursor: pointer; width: 100%; max-width: 400px; margin: 10px;">`
+                )
+                .join("");
+        } else {
+            carImagesGallery.innerHTML = "<p>No images available for this car.</p>";
+        }
+    } else {
+        alert("Car not found!");
+        window.location.href = "index.html";
     }
-});
+}
 
-// Function to read uploaded images as Base64
+// Read Images as Base64
 function readImages(files) {
     return Promise.all(
         Array.from(files).map((file) => {
@@ -216,158 +228,13 @@ function readImages(files) {
     );
 }
 
-// Handle Add/Edit Car Form Submission
-document.getElementById("car-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const carData = new FormData(event.target);
-    const carId = carData.get("id"); // Hidden field for editing
-    const imageFiles = document.getElementById("car-images").files;
-
-    // Read images as Base64
-    let images = [];
-    if (imageFiles.length > 0) {
-        images = await readImages(imageFiles);
-    }
-
-    // Build car object
-    const newCar = {
-        id: carId ? parseInt(carId) : Date.now(),
-        year: carData.get("year"),
-        name: carData.get("name"),
-        color: carData.get("color"),
-        interiorColor: carData.get("interior-color"),
-        interiorType: carData.get("interior-type"),
-        odometer: carData.get("odometer"),
-        price: carData.get("price"),
-        vin: carData.get("vin"),
-        images: images, // Base64 images
-        licenseExpiration: carData.get("license-expiration"),
-        insuranceExpiration: carData.get("insurance-expiration"),
-        lastServiced: carData.get("last-serviced"),
-        partsNeeded: carData.get("parts-needed"),
-        problems: carData.get("problems"),
-    };
-
-    // Save to localStorage
-    const carList = getCarList();
-    if (carId) {
-        // Editing existing car
-        const index = carList.findIndex((car) => car.id === parseInt(carId));
-        if (index !== -1) {
-            carList[index] = newCar;
-        }
-    } else {
-        // Adding new car
-        carList.push(newCar);
-    }
-
-    saveCarList(carList);
-    alert("Car saved successfully!");
-    window.location.href = "admin.html";
-});
-
-// Load Car Images
-function loadCarImages(carId) {
-    const car = getCarList().find((c) => c.id === parseInt(carId));
-
-    if (car) {
-        const carImagesGallery = document.getElementById("car-images-gallery");
-        const carDetailsLink = document.getElementById("car-details-link");
-
-        // Set back to details link
-        carDetailsLink.href = `car-details.html?id=${car.id}`;
-
-        if (car.images.length > 0) {
-            carImagesGallery.innerHTML = car.images
-                .map(
-                    (img) =>
-                        `<img src="${img}" alt="${car.name}" class="car-image-gallery" style="width: 100%; max-width: 400px; margin: 10px;">`
-                )
-                .join("");
-        } else {
-            carImagesGallery.innerHTML = "<p>No images available for this car.</p>";
-        }
-    } else {
-        alert("Car not found!");
-        window.location.href = "index.html";
-    }
-}
-
-// Initialize Car Images Page
+// Initialize Pages
 document.addEventListener("DOMContentLoaded", () => {
     const carId = new URLSearchParams(window.location.search).get("id");
-    if (carId && document.getElementById("car-images-gallery")) {
-        loadCarImages(carId);
-    }
+
+    if (document.getElementById("car-list-public")) loadPublicCars();
+    if (document.getElementById("car-list-admin")) loadAdminCars();
+    if (carId && document.getElementById("car-details")) loadCarDetails(carId);
+    if (carId && document.getElementById("car-images-gallery")) loadCarImages(carId);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const carId = new URLSearchParams(window.location.search).get("id");
-    const carImagesGallery = document.getElementById("car-images-gallery");
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImage = document.getElementById("lightbox-image");
-    const closeLightbox = document.querySelector(".close");
-
-    if (carId) {
-        loadCarImages(carId);
-    }
-
-    if (carImagesGallery) {
-        carImagesGallery.addEventListener("click", (e) => {
-            if (e.target.tagName === "IMG") {
-                lightboxImage.src = e.target.src;
-                lightbox.classList.remove("hidden");
-            }
-        });
-    }
-
-    if (closeLightbox) {
-        closeLightbox.addEventListener("click", () => {
-            lightbox.classList.add("hidden");
-        });
-    }
-});
-
-// Add this function to the CSS as well:
-function loadCarImages(carId) {
-    const car = getCarList().find((c) => c.id === parseInt(carId));
-
-    if (car) {
-        const carImagesGallery = document.getElementById("car-images-gallery");
-        carImagesGallery.innerHTML = car.images
-            .map(
-                (img) =>
-                    `<img src="${img}" alt="Car Image" class="car-image-gallery" style="cursor: pointer; width: 100%; max-width: 400px;">`
-            )
-            .join("");
-    } else {
-        alert("Car not found!");
-        window.location.href = "index.html";
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const carImagesInput = document.getElementById("car-images");
-    const imagePreviewContainer = document.getElementById("image-preview");
-
-    if (carImagesInput) {
-        carImagesInput.addEventListener("change", (event) => {
-            const files = event.target.files;
-            imagePreviewContainer.innerHTML = ""; // Clear previous previews
-
-            Array.from(files).forEach((file) => {
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    // Create an img element for preview
-                    const img = document.createElement("img");
-                    img.src = e.target.result; // Base64 string
-                    imagePreviewContainer.appendChild(img);
-                };
-
-                reader.readAsDataURL(file); // Convert image to Base64
-            });
-        });
-    }
-});
