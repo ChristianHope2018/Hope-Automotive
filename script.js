@@ -65,22 +65,27 @@ function validateLogin(username, password) {
     return username === correctUsername && password === correctPassword;
 }
 
-document.getElementById("login-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    if (validateLogin(username, password)) {
-        sessionStorage.setItem("isAdminLoggedIn", "true");
-        alert("Login successful!");
-        window.location.href = "admin.html";
-    } else {
-        document.getElementById("error-message").style.display = "block";
-    }
-});
-
 document.addEventListener("DOMContentLoaded", () => {
+    // Login Form Submission
+    const loginForm = document.getElementById("login-form");
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (validateLogin(username, password)) {
+                sessionStorage.setItem("isAdminLoggedIn", "true");
+                alert("Login successful!");
+                window.location.href = "admin.html";
+            } else {
+                document.getElementById("error-message").style.display = "block";
+            }
+        });
+    }
+
+    // Admin Page Authentication Check
     if (document.getElementById("car-list-admin")) {
         const isAdminLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
         if (!isAdminLoggedIn) {
@@ -88,56 +93,80 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "login.html";
         }
     }
-});
 
-document.getElementById("logout")?.addEventListener("click", () => {
-    sessionStorage.removeItem("isAdminLoggedIn");
-    alert("Logged out successfully!");
-    window.location.href = "index.html";
-});
-
-// Add or Edit Car
-document.getElementById("car-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const carData = new FormData(event.target);
-    const carId = carData.get("id");
-    const imageFiles = document.getElementById("car-images").files;
-
-    // Read images as Base64
-    let images = [];
-    if (imageFiles.length > 0) {
-        images = await readImages(imageFiles);
+    // Logout Button
+    const logoutButton = document.getElementById("logout");
+    if (logoutButton) {
+        logoutButton.addEventListener("click", () => {
+            sessionStorage.removeItem("isAdminLoggedIn");
+            alert("Logged out successfully!");
+            window.location.href = "index.html";
+        });
     }
 
-    const newCar = {
-        id: carId ? parseInt(carId) : Date.now(),
-        year: carData.get("year"),
-        name: carData.get("name"),
-        color: carData.get("color"),
-        interiorColor: carData.get("interior-color"),
-        interiorType: carData.get("interior-type"),
-        odometer: carData.get("odometer"),
-        price: carData.get("price"),
-        vin: carData.get("vin"),
-        images: images,
-        licenseExpiration: carData.get("license-expiration"),
-        insuranceExpiration: carData.get("insurance-expiration"),
-        lastServiced: carData.get("last-serviced"),
-        partsNeeded: carData.get("parts-needed"),
-        problems: carData.get("problems"),
-    };
+    // Car Form Submission
+    const carForm = document.getElementById("car-form");
+    if (carForm) {
+        carForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const carData = new FormData(event.target);
+            const carId = carData.get("id");
+            const imageFiles = document.getElementById("car-images").files;
 
-    const carList = await getCarList();
-    if (carId) {
-        const index = carList.findIndex((car) => car.id === parseInt(carId));
-        if (index !== -1) carList[index] = newCar;
-    } else {
-        carList.push(newCar);
+            // Read images as Base64
+            let images = [];
+            if (imageFiles.length > 0) {
+                images = await readImages(imageFiles);
+            }
+
+            const newCar = {
+                id: carId ? parseInt(carId) : Date.now(),
+                year: carData.get("year"),
+                name: carData.get("name"),
+                color: carData.get("color"),
+                interiorColor: carData.get("interior-color"),
+                interiorType: carData.get("interior-type"),
+                odometer: carData.get("odometer"),
+                price: carData.get("price"),
+                vin: carData.get("vin"),
+                images: images,
+                licenseExpiration: carData.get("license-expiration"),
+                insuranceExpiration: carData.get("insurance-expiration"),
+                lastServiced: carData.get("last-serviced"),
+                partsNeeded: carData.get("parts-needed"),
+                problems: carData.get("problems"),
+            };
+
+            const carList = await getCarList();
+            if (carId) {
+                const index = carList.findIndex((car) => car.id === parseInt(carId));
+                if (index !== -1) carList[index] = newCar;
+            } else {
+                carList.push(newCar);
+            }
+
+            await saveCarList(carList);
+            alert("Car saved successfully!");
+            window.location.href = "admin.html";
+        });
     }
 
-    await saveCarList(carList);
-    alert("Car saved successfully!");
-    window.location.href = "admin.html";
+    // Load Public Cars
+    if (document.getElementById("car-list-public")) {
+        loadPublicCars();
+    }
+
+    // Load Admin Cars
+    if (document.getElementById("car-list-admin")) {
+        loadAdminCars();
+    }
+
+    // Load Car Details
+    const carDetailsContainer = document.getElementById("car-details");
+    if (carDetailsContainer) {
+        const carId = new URLSearchParams(window.location.search).get("id");
+        loadCarDetails(carId);
+    }
 });
 
 // Delete Car
@@ -181,6 +210,66 @@ async function loadPublicCars() {
     });
 }
 
+// Load Admin Cars
+async function loadAdminCars() {
+    const carListContainer = document.getElementById("car-list-admin");
+    const carList = await getCarList();
+
+    carListContainer.innerHTML = "";
+    if (carList.length === 0) {
+        carListContainer.innerHTML = "<p>No cars in the database.</p>";
+        return;
+    }
+
+    carList.forEach((car) => {
+        const carCard = document.createElement("div");
+        carCard.classList.add("car-item");
+
+        const firstImage = car.images[0] || "https://via.placeholder.com/300";
+
+        carCard.innerHTML = `
+            <img src="${firstImage}" alt="${car.name}" class="car-thumbnail" style="width: 100%; max-width: 300px;">
+            <h3>${car.year} ${car.name}</h3>
+            <p><strong>Color:</strong> ${car.color}</p>
+            <p><strong>Odometer:</strong> ${car.odometer} miles</p>
+            <p><strong>Price:</strong> $${car.price}</p>
+            <button onclick="deleteCar(${car.id})">Delete</button>
+        `;
+
+        carListContainer.appendChild(carCard);
+    });
+}
+
+// Load Car Details
+async function loadCarDetails(carId) {
+    const carDetailsContainer = document.getElementById("car-details");
+    const carList = await getCarList();
+    const car = carList.find((car) => car.id === parseInt(carId));
+
+    if (!car) {
+        carDetailsContainer.innerHTML = "<p>Car not found.</p>";
+        return;
+    }
+
+    const firstImage = car.images[0] || "https://via.placeholder.com/300";
+
+    carDetailsContainer.innerHTML = `
+        <img src="${firstImage}" alt="${car.name}" class="car-thumbnail" style="width: 100%; max-width: 300px;">
+        <h3>${car.year} ${car.name}</h3>
+        <p><strong>Color:</strong> ${car.color}</p>
+        <p><strong>Odometer:</strong> ${car.odometer} miles</p>
+        <p><strong>Price:</strong> $${car.price}</p>
+        <p><strong>Interior Color:</strong> ${car.interiorColor}</p>
+        <p><strong>Interior Type:</strong> ${car.interiorType}</p>
+        <p><strong>VIN:</strong> ${car.vin}</p>
+        <p><strong>License Expiration:</strong> ${car.licenseExpiration}</p>
+        <p><strong>Insurance Expiration:</strong> ${car.insuranceExpiration}</p>
+        <p><strong>Last Serviced:</strong> ${car.lastServiced}</p>
+        <p><strong>Parts Needed:</strong> ${car.partsNeeded}</p>
+        <p><strong>Problems:</strong> ${car.problems}</p>
+    `;
+}
+
 // Read Images as Base64
 function readImages(files) {
     return Promise.all(
@@ -194,11 +283,3 @@ function readImages(files) {
         })
     );
 }
-
-// Initialize Pages
-document.addEventListener("DOMContentLoaded", async () => {
-    const carId = new URLSearchParams(window.location.search).get("id");
-
-    if (document.getElementById("car-list-public")) loadPublicCars();
-    if (document.getElementById("car-list-admin")) loadPublicCars();
-});
