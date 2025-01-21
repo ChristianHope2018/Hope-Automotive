@@ -283,3 +283,37 @@ function readImages(files) {
         })
     );
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const carId = new URLSearchParams(window.location.search).get("id");
+    const viewImagesButton = document.getElementById("view-images");
+
+    if (viewImagesButton && carId) {
+        viewImagesButton.addEventListener("click", () => {
+            window.location.href = `car-images.html?id=${carId}`;
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const carId = new URLSearchParams(window.location.search).get("id");
+    const carImagesContainer = document.getElementById("car-images-container");
+
+    if (carId && carImagesContainer) {
+        const carList = await getCarList();
+        const car = carList.find((car) => car.id === parseInt(carId));
+
+        if (car && car.images && car.images.length > 0) {
+            car.images.forEach((image) => {
+                const img = document.createElement("img");
+                img.src = image;
+                img.alt = `${car.name} image`;
+                img.style.maxWidth = "300px";
+                img.style.margin = "10px";
+                carImagesContainer.appendChild(img);
+            });
+        } else {
+            carImagesContainer.innerHTML = `<p>No images available for this car.</p>`;
+        }
+    }
+});
