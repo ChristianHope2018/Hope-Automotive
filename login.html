@@ -4,27 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
-    <link rel="stylesheet" href="style.css">
+    <script src="assets/script.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1>Admin Login</h1>
-    </header>
-    <main>
-        <form id="login-form">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-
-            <button type="submit">Login</button>
-        </form>
-    </main>
-    <footer>
-        <p>&copy; 2025 Hope Automotive</p>
-    </footer>
-    <script src="script.js"></script>
+    <h1>Admin Login</h1>
+    <form id="login-form">
+        <label>Username: <input type="text" id="username" required></label><br>
+        <label>Password: <input type="password" id="password" required></label><br>
+        <button type="submit">Login</button>
+        <p id="error-message" style="color: red; display: none;">Invalid username or password.</p>
+    </form>
 </body>
 </html>
-
