@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Hope Automotive</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <title>Admin Dashboard</title>
+    <script src="assets/script.js" defer></script>
 </head>
 <body>
+    <h1>Admin Dashboard</h1>
+    <button id="logout">Logout</button>
+    <form id="car-form">
+        <input type="hidden" id="id" name="id">
+        <label>Year: <input type="number" id="year" name="year" required></label><br>
+        <label>Name: <input type="text" id="name" name="name" required></label><br>
+        <label>Color: <input type="text" id="color" name="color"></label><br>
+        <label>Interior Color: <input type="text" id="interior-color" name="interior-color"></label><br>
+        <label>Interior Type: <input type="text" id="interior-type" name="interior-type"></label><br>
+        <label>Odometer: <input type="number" id="odometer" name="odometer"></label><br>
+        <label>Price: <input type="number" id="price" name="price" required></label><br>
+        <label>VIN: <input type="text" id="vin" name="vin"></label><br>
+        <label>Images: <input type="file" id="car-images" multiple></label><br>
+        <label>License Expiration: <input type="date" id="license-expiration" name="license-expiration"></label><br>
+        <label>Insurance Expiration: <input type="date" id="insurance-expiration" name="insurance-expiration"></label><br>
+        <label>Last Serviced: <input type="date" id="last-serviced" name="last-serviced"></label><br>
+        <label>Parts Needed: <textarea id="parts-needed" name="parts-needed"></textarea></label><br>
+        <label>Problems: <textarea id="problems" name="problems"></textarea></label><br>
+        <button type="submit">Save Car</button>
+    </form>
 
-    <!-- Header -->
-    <header>
-        <h1>Hope Automotive - Admin Dashboard</h1>
-        <a href="index.html" class="button" id="logout">Logout</a>
-    </header>
-
-    <main>
-        <h2>Car Inventory</h2>
-        <div id="car-list-admin"></div>
-        <a href="add_edit_car.html" class="button">Add New Car</a>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 Hope Automotive</p>
-    </footer>
-
+    <div id="car-list-admin"></div>
 </body>
 </html>
