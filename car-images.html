@@ -3,31 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Images - Hope Automotive</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Car Images</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Hope Automotive</h1>
+        <h1>Car Images</h1>
         <nav>
-            <a href="index.html" class="button">Home</a>
-            <a href="car-details.html?id=" id="car-details-link" class="button">Back to Details</a>
+            <a href="car-details.html?id={carId}">Back to Details</a>
         </nav>
     </header>
     <main>
-        <section id="car-images-section">
-            <h2>Car Images</h2>
-            <div id="car-images-gallery" class="image-gallery">
-                <!-- Images will be dynamically loaded here -->
-            </div>
-            <div id="lightbox" class="lightbox hidden">
-    <span class="close">&times;</span>
-    <img id="lightbox-image" class="lightbox-image" src="" alt="Car Image">
-</div>
-        </section>
+        <div id="car-images-container"></div>
     </main>
     <footer>
-        <p>&copy; 2025 Hope Automotive</p>
+        <p>&copy; 2025 Car Listings</p>
     </footer>
     <script src="script.js"></script>
 </body>
