@@ -1,29 +1,78 @@
-// Utility Functions for LocalStorage
-function getCarList() {
-    const storedCars = localStorage.getItem("carList");
-    return storedCars ? JSON.parse(storedCars) : [];
+// IndexedDB Utility Functions
+const dbName = "CarDatabase";
+const storeName = "carStore";
+
+// Open or Create IndexedDB
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: "id" });
+            }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
 }
 
-function saveCarList(carList) {
-    localStorage.setItem("carList", JSON.stringify(carList));
+// Get All Cars
+async function getCarList() {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, "readonly");
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
 }
 
-// Function to Validate Admin Login
+// Save or Update a Car
+async function saveCarList(carList) {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+
+        carList.forEach((car) => store.put(car)); // Add or update each car
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = (event) => reject(event.target.error);
+    });
+}
+
+// Delete a Car
+async function deleteCarById(carId) {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, "readwrite");
+        const store = transaction.objectStore(storeName);
+        const request = store.delete(carId);
+
+        request.onsuccess = () => resolve();
+        request.onerror = (event) => reject(event.target.error);
+    });
+}
+
+// Admin Login and Logout
 function validateLogin(username, password) {
     const correctUsername = "admin";
     const correctPassword = "password123";
     return username === correctUsername && password === correctPassword;
 }
 
-// Handle Admin Login
-document.getElementById("login-form")?.addEventListener("submit", (event) => {
+document.getElementById("login-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
     if (validateLogin(username, password)) {
-        localStorage.setItem("isAdminLoggedIn", "true");
+        sessionStorage.setItem("isAdminLoggedIn", "true");
         alert("Login successful!");
         window.location.href = "admin.html";
     } else {
@@ -31,20 +80,18 @@ document.getElementById("login-form")?.addEventListener("submit", (event) => {
     }
 });
 
-// Check Admin Login for Protected Pages
 document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("car-list-admin")) {
-        const isAdminLoggedIn = localStorage.getItem("isAdminLoggedIn");
-        if (isAdminLoggedIn !== "true") {
+        const isAdminLoggedIn = sessionStorage.getItem("isAdminLoggedIn");
+        if (!isAdminLoggedIn) {
             alert("You must log in as an admin to access this page.");
             window.location.href = "login.html";
         }
     }
 });
 
-// Handle Logout
 document.getElementById("logout")?.addEventListener("click", () => {
-    localStorage.removeItem("isAdminLoggedIn");
+    sessionStorage.removeItem("isAdminLoggedIn");
     alert("Logged out successfully!");
     window.location.href = "index.html";
 });
@@ -53,7 +100,7 @@ document.getElementById("logout")?.addEventListener("click", () => {
 document.getElementById("car-form")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const carData = new FormData(event.target);
-    const carId = carData.get("id"); // Hidden field for editing
+    const carId = carData.get("id");
     const imageFiles = document.getElementById("car-images").files;
 
     // Read images as Base64
@@ -62,7 +109,6 @@ document.getElementById("car-form")?.addEventListener("submit", async (event) =>
         images = await readImages(imageFiles);
     }
 
-    // Build car object
     const newCar = {
         id: carId ? parseInt(carId) : Date.now(),
         year: carData.get("year"),
@@ -73,7 +119,7 @@ document.getElementById("car-form")?.addEventListener("submit", async (event) =>
         odometer: carData.get("odometer"),
         price: carData.get("price"),
         vin: carData.get("vin"),
-        images: images, // Base64 images
+        images: images,
         licenseExpiration: carData.get("license-expiration"),
         insuranceExpiration: carData.get("insurance-expiration"),
         lastServiced: carData.get("last-serviced"),
@@ -81,33 +127,36 @@ document.getElementById("car-form")?.addEventListener("submit", async (event) =>
         problems: carData.get("problems"),
     };
 
-    // Save to localStorage
-    let carList = getCarList();
+    const carList = await getCarList();
     if (carId) {
-        // Editing existing car
         const index = carList.findIndex((car) => car.id === parseInt(carId));
-        if (index !== -1) {
-            carList[index] = newCar;
-        }
+        if (index !== -1) carList[index] = newCar;
     } else {
-        // Adding new car
         carList.push(newCar);
     }
 
-    saveCarList(carList);
+    await saveCarList(carList);
     alert("Car saved successfully!");
     window.location.href = "admin.html";
 });
 
-// Load Public Car List
-function loadPublicCars() {
+// Delete Car
+async function deleteCar(carId) {
+    if (confirm("Are you sure you want to delete this car?")) {
+        await deleteCarById(carId);
+        alert("Car deleted successfully!");
+        window.location.reload();
+    }
+}
+
+// Load Public Cars
+async function loadPublicCars() {
     const carListContainer = document.getElementById("car-list-public");
-    const carList = getCarList();
+    const carList = await getCarList();
 
     if (!carListContainer) return console.error("Public car list container not found!");
 
-    carListContainer.innerHTML = ""; // Clear previous content
-
+    carListContainer.innerHTML = "";
     if (carList.length === 0) {
         carListContainer.innerHTML = "<p>No cars are available at the moment.</p>";
         return;
@@ -132,95 +181,13 @@ function loadPublicCars() {
     });
 }
 
-// Load Admin Car List
-function loadAdminCars() {
-    const carListContainer = document.getElementById("car-list-admin");
-    const carList = getCarList();
-
-    carListContainer.innerHTML = "";
-
-    carList.forEach((car) => {
-        const carCard = document.createElement("div");
-        carCard.classList.add("car-item");
-
-        carCard.innerHTML = `
-            <h3>${car.year} ${car.name}</h3>
-            <p>Price: $${car.price}</p>
-            <p>Odometer: ${car.odometer} miles</p>
-            <a href="add_edit_car.html?id=${car.id}" class="button">Edit</a>
-            <button class="button" onclick="deleteCar(${car.id})">Delete</button>
-        `;
-
-        carListContainer.appendChild(carCard);
-    });
-}
-
-// Delete Car
-function deleteCar(carId) {
-    if (confirm("Are you sure you want to delete this car?")) {
-        let carList = getCarList();
-        carList = carList.filter((car) => car.id !== carId);
-
-        saveCarList(carList);
-        alert("Car deleted successfully!");
-        window.location.reload();
-    }
-}
-
-// Load Car Details
-function loadCarDetails(carId) {
-    const car = getCarList().find((c) => c.id === parseInt(carId));
-
-    if (car) {
-        const carDetailsContainer = document.getElementById("car-details");
-
-        carDetailsContainer.innerHTML = `
-            <h2>${car.year} ${car.name}</h2>
-            <p><strong>Color:</strong> ${car.color}</p>
-            <p><strong>Interior Color:</strong> ${car.interiorColor}</p>
-            <p><strong>Interior Type:</strong> ${car.interiorType}</p>
-            <p><strong>Odometer:</strong> ${car.odometer} miles</p>
-            <p><strong>Asking Price:</strong> $${car.price}</p>
-            <p><strong>VIN:</strong> ${car.vin}</p>
-            <h3>Images:</h3>
-            <a href="car-images.html?id=${car.id}" class="button">View All Images</a>
-        `;
-    } else {
-        alert("Car not found!");
-        window.location.href = "index.html";
-    }
-}
-
-// Load Car Images
-function loadCarImages(carId) {
-    const car = getCarList().find((c) => c.id === parseInt(carId));
-
-    if (car) {
-        const carImagesGallery = document.getElementById("car-images-gallery");
-
-        if (car.images.length > 0) {
-            carImagesGallery.innerHTML = car.images
-                .map(
-                    (img) =>
-                        `<img src="${img}" alt="Car Image" class="car-image-gallery" style="cursor: pointer; width: 100%; max-width: 400px; margin: 10px;">`
-                )
-                .join("");
-        } else {
-            carImagesGallery.innerHTML = "<p>No images available for this car.</p>";
-        }
-    } else {
-        alert("Car not found!");
-        window.location.href = "index.html";
-    }
-}
-
 // Read Images as Base64
 function readImages(files) {
     return Promise.all(
         Array.from(files).map((file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result); // Base64 string
+                reader.onload = () => resolve(reader.result);
                 reader.onerror = (error) => reject(error);
                 reader.readAsDataURL(file);
             });
@@ -229,12 +196,9 @@ function readImages(files) {
 }
 
 // Initialize Pages
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const carId = new URLSearchParams(window.location.search).get("id");
 
     if (document.getElementById("car-list-public")) loadPublicCars();
-    if (document.getElementById("car-list-admin")) loadAdminCars();
-    if (carId && document.getElementById("car-details")) loadCarDetails(carId);
-    if (carId && document.getElementById("car-images-gallery")) loadCarImages(carId);
+    if (document.getElementById("car-list-admin")) loadPublicCars();
 });
-
