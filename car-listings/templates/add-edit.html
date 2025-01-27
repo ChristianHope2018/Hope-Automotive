@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add/Edit Car</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Add/Edit Car</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="admin.html">Admin Dashboard</a>
+            <a href="#" id="logout">Logout</a>
+        </nav>
+    </header>
+
+    <main>
+        <form id="car-form">
+            <input type="hidden" name="id" id="id" value="">
+            
+            <label for="year">Year:</label>
+            <input type="number" name="year" id="year" required>
+            
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" required>
+            
+            <label for="color">Color:</label>
+            <input type="text" name="color" id="color" required>
+            
+            <label for="interior-color">Interior Color:</label>
+            <input type="text" name="interior-color" id="interior-color" required>
+            
+            <label for="interior-type">Interior Type:</label>
+            <input type="text" name="interior-type" id="interior-type" required>
+            
+            <label for="odometer">Odometer (miles):</label>
+            <input type="number" name="odometer" id="odometer" required>
+            
+            <label for="price">Price:</label>
+            <input type="number" name="price" id="price" required>
+            
+            <label for="vin">VIN:</label>
+            <input type="text" name="vin" id="vin" required>
+            
+            <label for="license-expiration">License Expiration:</label>
+            <input type="date" name="license-expiration" id="license-expiration" required>
+            
+            <label for="insurance-expiration">Insurance Expiration:</label>
+            <input type="date" name="insurance-expiration" id="insurance-expiration" required>
+            
+            <label for="last-serviced">Last Serviced:</label>
+            <input type="date" name="last-serviced" id="last-serviced" required>
+            
+            <label for="parts-needed">Parts Needed:</label>
+            <textarea name="parts-needed" id="parts-needed"></textarea>
+            
+            <label for="problems">Problems:</label>
+            <textarea name="problems" id="problems"></textarea>
+            
+            <label for="car-images">Car Images:</label>
+            <input type="file" id="car-images" multiple accept="image/*">
+            
+            <button type="submit">Save</button>
+        </form>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
